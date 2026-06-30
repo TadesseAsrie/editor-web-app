@@ -1259,7 +1259,8 @@
       itemRow.className = `template-inject-btn h-level-${heading.tagName.toLowerCase()}`;
       itemRow.style.paddingLeft =
         heading.tagName.toLowerCase() === "h2" ? "20px" : "10px";
-      itemRow.innerHTML = `<i class="fa-solid id fa-angles-right"></i> ${heading.textContent}`;
+      itemRow.innerHTML =
+        itemRow.innerHTML = `<i class="fa-solid fa-angles-right"></i> ${heading.textContent}`;;
       itemRow.addEventListener("click", () => {
         heading.scrollIntoView({ behavior: "smooth", block: "start" });
       });
