@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordCraft Office - Document Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body data-theme="office-blue">
+
+    <header class="app-header" role="banner">
+        <div class="header-top">
+            <div class="brand-zone">
+                <i class="fa-solid fa-file-word brand-logo" aria-hidden="true"></i>
+                <input type="text" id="document-title" class="document-title-input" value="Untitled Document" aria-label="Document Title">
+                <span class="save-status-badge" id="save-status">Saved to cloud</span>
+            </div>
+            <div class="quick-actions-zone">
+                <button id="btn-quick-undo" class="action-btn" title="Undo (Ctrl+Z)" aria-label="Undo"><i class="fa-solid fa-undo"></i></button>
+                <button id="btn-quick-redo" class="action-btn" title="Redo (Ctrl+Y)" aria-label="Redo"><i class="fa-solid fa-redo"></i></button>
+                <button id="btn-quick-save" class="action-btn primary" title="Save File (Ctrl+S)" aria-label="Save Document"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                <button id="btn-global-fullscreen" class="action-btn" title="Toggle Fullscreen (F11)" aria-label="Toggle Fullscreen"><i class="fa-solid fa-expand"></i></button>
+                <div class="user-profile-zone">
+                    <div class="avatar">JD</div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="menu-bar" role="navigation" aria-label="Main Menu">
+            <div class="menu-item-container">
+                <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">File</button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" id="menu-file-new"><i class="fa-solid fa-file-circle-plus"></i> New Document <span>Ctrl+N</span></button>
+                    <button class="dropdown-item" id="menu-file-open"><i class="fa-solid fa-folder-open"></i> Open Text File <span>Ctrl+O</span></button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-file-save"><i class="fa-solid fa-floppy-disk"></i> Save <span>Ctrl+S</span></button>
+                    <button class="dropdown-item" id="menu-file-saveas"><i class="fa-solid fa-file-arrow-up"></i> Save As...</button>
+                    <button class="dropdown-item" id="menu-file-duplicate"><i class="fa-solid fa-copy"></i> Duplicate Document</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-file-import-html"><i class="fa-solid fa-file-import"></i> Import HTML Document</button>
+                    <button class="dropdown-item" id="menu-file-import-docx"><i class="fa-solid fa-file-contract"></i> Import DOCX Simulator</button>
+                    <hr>
+                    <div class="nested-dropdown-parent">
+                        <button class="dropdown-item"><i class="fa-solid fa-download"></i> Export As... <i class="fa-solid fa-chevron-right nested-indicator"></i></button>
+                        <div class="nested-dropdown-menu">
+                            <button class="dropdown-item" id="export-txt">Plain Text (.txt)</button>
+                            <button class="dropdown-item" id="export-html">Web Page (.html)</button>
+                            <button class="dropdown-item" id="export-md">Markdown (.md)</button>
+                            <button class="dropdown-item" id="export-json">JSON Spec Payload (.json)</button>
+                            <button class="dropdown-item" id="export-pdf">PDF Document (.pdf)</button>
+                        </div>
+                    </div>
+                    <button class="dropdown-item" id="menu-file-print"><i class="fa-solid fa-print"></i> Print <span>Ctrl+P</span></button>
+                    <hr>
+                    <button class="dropdown-item danger" id="menu-file-delete"><i class="fa-solid fa-trash-can"></i> Delete File</button>
+                </div>
+            </div>
+            <div class="menu-item-container">
+                <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Edit</button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" id="menu-edit-undo"><i class="fa-solid fa-undo"></i> Undo <span>Ctrl+Z</span></button>
+                    <button class="dropdown-item" id="menu-edit-redo"><i class="fa-solid fa-redo"></i> Redo <span>Ctrl+Y</span></button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-edit-cut"><i class="fa-solid fa-scissors"></i> Cut <span>Ctrl+X</span></button>
+                    <button class="dropdown-item" id="menu-edit-copy"><i class="fa-solid fa-copy"></i> Copy <span>Ctrl+C</span></button>
+                    <button class="dropdown-item" id="menu-edit-paste"><i class="fa-solid fa-clipboard"></i> Paste <span>Ctrl+V</span></button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-edit-selectall"><i class="fa-solid fa-arrow-pointer"></i> Select All <span>Ctrl+A</span></button>
+                    <button class="dropdown-item" id="menu-edit-clear"><i class="fa-solid fa-eraser"></i> Clear Document Content</button>
+                </div>
+            </div>
+            <div class="menu-item-container">
+                <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Insert</button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" id="menu-ins-image"><i class="fa-solid fa-image"></i> Image Object</button>
+                    <button class="dropdown-item" id="menu-ins-table"><i class="fa-solid fa-table"></i> Data Table Grid</button>
+                    <button class="dropdown-item" id="menu-ins-link"><i class="fa-solid fa-link"></i> Hyperlink</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-ins-hr"><i class="fa-solid fa-minus"></i> Horizontal Line Rule</button>
+                    <button class="dropdown-item" id="menu-ins-emoji"><i class="fa-regular fa-face-smile"></i> Expressive Emoji</button>
+                    <button class="dropdown-item" id="menu-ins-symbol"><i class="fa-solid fa-omega"></i> Special Characters</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-ins-date"><i class="fa-solid fa-calendar-days"></i> Current Date Timestamp</button>
+                    <button class="dropdown-item" id="menu-ins-time"><i class="fa-solid fa-clock"></i> Current Clock Time</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-ins-code"><i class="fa-solid fa-code"></i> Block Code Segment</button>
+                    <button class="dropdown-item" id="menu-ins-quote"><i class="fa-solid fa-quote-left"></i> Visual Blockquote</button>
+                </div>
+            </div>
+            <div class="menu-item-container">
+                <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Format</button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" id="menu-fmt-bold"><i class="fa-solid fa-bold"></i> Bold Text Transformation</button>
+                    <button class="dropdown-item" id="menu-fmt-italic"><i class="fa-solid fa-italic"></i> Italic Style</button>
+                    <button class="dropdown-item" id="menu-fmt-underline"><i class="fa-solid fa-underline"></i> Underline Stroke</button>
+                    <button class="dropdown-item" id="menu-fmt-strike"><i class="fa-solid fa-strikethrough"></i> Strikethrough</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-fmt-upper"><i class="fa-solid fa-text-height"></i> Convert To UPPERCASE</button>
+                    <button class="dropdown-item" id="menu-fmt-lower"><i class="fa-solid fa-text-width"></i> Convert To lowercase</button>
+                    <button class="dropdown-item" id="menu-fmt-cap"><i class="fa-solid fa-text-slash"></i> Capitalize Words</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-fmt-clear"><i class="fa-solid fa-text-slash"></i> Strip & Clear Formatting</button>
+                </div>
+            </div>
+            <div class="menu-item-container">
+                <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">View</button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item toggle-active" id="menu-view-nav"><i class="fa-solid fa-circle-check"></i> Show Document Outline Sidebar</button>
+                    <button class="dropdown-item toggle-active" id="menu-view-props"><i class="fa-solid fa-circle-check"></i> Show Live Metrics Sidebar</button>
+                    <hr>
+                    <button class="dropdown-item" id="menu-view-spell"><i class="fa-solid fa-spell-check"></i> Toggle System Spellcheck</button>
+                    <button class="dropdown-item" id="menu-view-printprev"><i class="fa-solid fa-eye"></i> Print Layout Preview</button>
+                </div>
+            </div>
+            <div class="menu-item-container">
+                <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Help</button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" id="menu-hlp-shortcuts"><i class="fa-solid fa-keyboard"></i> Hotkeys & Shortcuts Reference</button>
+                    <button class="dropdown-item" id="menu-hlp-about"><i class="fa-solid fa-circle-info"></i> About WordCraft Office Engine</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="ribbon-tabs-container">
+            <div class="ribbon-tabs">
+                <button class="ribbon-tab active" data-target="tab-home">Home</button>
+                <button class="ribbon-tab" data-target="tab-insert">Insert</button>
+                <button class="ribbon-tab" data-target="tab-layout">Layout & Canvas</button>
+                <button class="ribbon-tab" data-target="tab-review">Review & Governance</button>
+            </div>
+            
+            <div class="ribbon-panels-viewport">
+                <div class="ribbon-panel active" id="tab-home">
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <button id="ribbon-cut" class="ribbon-btn-vertical" title="Cut (Ctrl+X)"><i class="fa-solid fa-scissors"></i><span>Cut</span></button>
+                            <button id="ribbon-copy" class="ribbon-btn-vertical" title="Copy (Ctrl+C)"><i class="fa-solid fa-copy"></i><span>Copy</span></button>
+                            <button id="ribbon-paste" class="ribbon-btn-vertical primary" title="Paste (Ctrl+V)"><i class="fa-solid fa-clipboard"></i><span>Paste</span></button>
+                        </div>
+                        <div class="ribbon-group-label">Clipboard</div>
+                    </div>
+                    <div class="divider-vertical"></div>
+                    <div class="ribbon-group">
+                        <div class="ribbon-row gap-dense">
+                            <select id="font-family-select" class="ribbon-dropdown font-family" title="Font Family">
+                                <option value="Inter" selected>Inter (Standard UI)</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Roboto">Roboto Regular</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Lora">Lora Serif</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="JetBrains Mono">JetBrains Developer Mono</option>
+                            </select>
+                            <select id="font-size-select" class="ribbon-dropdown font-size" title="Font Size">
+                                <option value="1">8pt</option>
+                                <option value="2">10pt</option>
+                                <option value="3" selected>12pt</option>
+                                <option value="4">14pt</option>
+                                <option value="5">18pt</option>
+                                <option value="6">24pt</option>
+                                <option value="7">36pt</option>
+                            </select>
+                            <button id="ribbon-font-grow" class="ribbon-btn-sm" title="Grow Font Size"><i class="fa-solid fa-font"></i><i class="fa-solid fa-arrow-up text-subscript"></i></button>
+                            <button id="ribbon-font-shrink" class="ribbon-btn-sm" title="Shrink Font Size"><i class="fa-solid fa-font"></i><i class="fa-solid fa-arrow-down text-subscript"></i></button>
+                            <button id="ribbon-clear-format" class="ribbon-btn-sm text-danger" title="Clear Structural Formatting"><i class="fa-solid fa-eraser"></i></button>
+                        </div>
+                        <div class="ribbon-row top-border-row">
+                            <button id="ribbon-bold" class="ribbon-btn-sm togglable" title="Bold (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+                            <button id="ribbon-italic" class="ribbon-btn-sm togglable" title="Italic (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+                            <button id="ribbon-underline" class="ribbon-btn-sm togglable" title="Underline (Ctrl+U)"><i class="fa-solid fa-underline"></i></button>
+                            <button id="ribbon-strike" class="ribbon-btn-sm togglable" title="Strikethrough"><i class="fa-solid fa-strikethrough"></i></button>
+                            <button id="ribbon-sub" class="ribbon-btn-sm togglable" title="Subscript"><i class="fa-solid fa-subscript"></i></button>
+                            <button id="ribbon-sup" class="ribbon-btn-sm togglable" title="Superscript"><i class="fa-solid fa-superscript"></i></button>
+                            <div class="divider-vertical-mini"></div>
+                            <div class="color-picker-wrapper" title="Text Paint Color">
+                                <i class="fa-solid fa-font"></i>
+                                <input type="color" id="ribbon-forecolor" value="#1e293b">
+                            </div>
+                            <div class="color-picker-wrapper highlight-mode" title="Text Highlight Color">
+                                <i class="fa-solid fa-highlighter"></i>
+                                <input type="color" id="ribbon-backcolor" value="#ffffff">
+                            </div>
+                        </div>
+                        <div class="ribbon-group-label">Font Configurations</div>
+                    </div>
+                    <div class="divider-vertical"></div>
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <button id="ribbon-align-left" class="ribbon-btn-sm togglable active" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                            <button id="ribbon-align-center" class="ribbon-btn-sm togglable" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                            <button id="ribbon-align-right" class="ribbon-btn-sm togglable" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                            <button id="ribbon-align-justify" class="ribbon-btn-sm togglable" title="Justify Lines"><i class="fa-solid fa-align-justify"></i></button>
+                            <div class="divider-vertical-mini"></div>
+                            <button id="ribbon-list-bullets" class="ribbon-btn-sm togglable" title="Unordered Bullet List"><i class="fa-solid fa-list-ul"></i></button>
+                            <button id="ribbon-list-numbers" class="ribbon-btn-sm togglable" title="Ordered Numeric List"><i class="fa-solid fa-list-ol"></i></button>
+                            <button id="ribbon-list-check" class="ribbon-btn-sm" title="Interactive Checklist"><i class="fa-regular fa-square-check"></i></button>
+                        </div>
+                        <div class="ribbon-row top-border-row">
+                            <button id="ribbon-outdent" class="ribbon-btn-sm" title="Decrease Indentation (Shift+Tab)"><i class="fa-solid fa-outdent"></i></button>
+                            <button id="ribbon-indent" class="ribbon-btn-sm" title="Increase Indentation (Tab)"><i class="fa-solid fa-indent"></i></button>
+                            <div class="divider-vertical-mini"></div>
+                            <select id="ribbon-line-height" class="ribbon-dropdown width-auto" title="Line Spacing Matrix">
+                                <option value="normal" selected>Line Height: Normal</option>
+                                <option value="1.0">1.0 Single</option>
+                                <option value="1.15">1.15 Classic</option>
+                                <option value="1.5">1.5 Executive</option>
+                                <option value="2.0">2.0 Double</option>
+                            </select>
+                        </div>
+                        <div class="ribbon-group-label">Paragraph Layout</div>
+                    </div>
+                    <div class="divider-vertical"></div>
+                    <div class="ribbon-group">
+                        <div class="ribbon-row styles-gallery">
+                            <button class="style-preset-btn active" data-style="normal"><strong>AaBbCc</strong><span class="lbl">Normal</span></button>
+                            <button class="style-preset-btnHeading" data-style="h1"><strong>Heading 1</strong><span class="lbl">Title Large</span></button>
+                            <button class="style-preset-btnHeading" data-style="h2"><strong>Heading 2</strong><span class="lbl">Subtitle</span></button>
+                            <button class="style-preset-btnHeading" data-style="quote"><strong>“BlockQuote”</strong><span class="lbl">Citation</span></button>
+                        </div>
+                        <div class="ribbon-group-label">Styles Template Gallery</div>
+                    </div>
+                </div>
+
+                <div class="ribbon-panel" id="tab-insert">
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <button id="ribbon-ins-img-file" class="ribbon-btn-vertical"><i class="fa-solid fa-file-image"></i><span>Upload Image</span></button>
+                            <button id="ribbon-ins-table-grid" class="ribbon-btn-vertical"><i class="fa-solid fa-table-cells"></i><span>Data Table</span></button>
+                            <button id="ribbon-ins-hyperlink" class="ribbon-btn-vertical"><i class="fa-solid fa-link"></i><span>Hyperlink</span></button>
+                        </div>
+                        <div class="ribbon-group-label">Illustrations & Elements</div>
+                    </div>
+                    <div class="divider-vertical"></div>
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <button id="ribbon-ins-hr-line" class="ribbon-btn-sm" title="Horizontal Break Line"><i class="fa-solid fa-minus"></i> Horizontal Rule</button>
+                            <button id="ribbon-ins-pagebreak" class="ribbon-btn-sm" title="Force Page Break Layout"><i class="fa-solid fa-scissors"></i> Page Break Boundary</button>
+                        </div>
+                        <div class="ribbon-row top-border-row">
+                            <button id="ribbon-ins-emoji-picker" class="ribbon-btn-sm"><i class="fa-regular fa-face-smile"></i> Inject Emoji</button>
+                            <button id="ribbon-ins-symbol-picker" class="ribbon-btn-sm"><i class="fa-solid fa-icons"></i> Math Symbol</button>
+                        </div>
+                        <div class="ribbon-group-label">Document Structuring</div>
+                    </div>
+                </div>
+
+                <div class="ribbon-panel" id="tab-layout">
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <select id="canvas-theme-select" class="ribbon-dropdown" title="Visual Environment Skin">
+                                <option value="office-blue">Default Professional Blue</option>
+                                <option value="office-dark">Dark Theme Environment</option>
+                                <option value="office-light">Pure Document Light</option>
+                                <option value="high-contrast">Accessibility High Contrast</option>
+                            </select>
+                        </div>
+                        <div class="ribbon-row top-border-row">
+                            <select id="canvas-geometry-select" class="ribbon-dropdown" title="Page Blueprint Dimensions">
+                                <option value="letter">Standard US Letter</option>
+                                <option value="a4" selected>International A4 Layout</option>
+                            </select>
+                        </div>
+                        <div class="ribbon-group-label">Environment Workspace Themes</div>
+                    </div>
+                    <div class="divider-vertical"></div>
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <div class="input-form-inline">
+                                <label for="prop-letter-spacing">Letter Spacing:</label>
+                                <input type="number" id="prop-letter-spacing" class="inline-input-num" min="0" max="10" value="0" step="0.5">px
+                            </div>
+                        </div>
+                        <div class="ribbon-row top-border-row">
+                            <div class="input-form-inline">
+                                <label for="prop-para-spacing">Paragraph Gap:</label>
+                                <input type="number" id="prop-para-spacing" class="inline-input-num" min="0" max="50" value="12" step="2">px
+                            </div>
+                        </div>
+                        <div class="ribbon-group-label">Micro-Typography Fine-tuning</div>
+                    </div>
+                </div>
+
+                <div class="ribbon-panel" id="tab-review">
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <button id="ribbon-toggle-spellcheck" class="ribbon-btn-vertical active-indicator" title="Toggle Real-time Native Spell Engine"><i class="fa-solid fa-spell-check"></i><span>Spell Check</span></button>
+                        </div>
+                        <div class="ribbon-group-label">Language Verification</div>
+                    </div>
+                    <div class="divider-vertical"></div>
+                    <div class="ribbon-group">
+                        <div class="ribbon-row">
+                            <div class="search-box-ribbon">
+                                <input type="text" id="ribbon-search-input" placeholder="Search string...">
+                                <button id="btn-search-next" title="Next Match"><i class="fa-solid fa-chevron-down"></i></button>
+                                <button id="btn-search-prev" title="Previous Match"><i class="fa-solid fa-chevron-up"></i></button>
+                            </div>
+                        </div>
+                        <div class="ribbon-row top-border-row">
+                            <div class="search-box-ribbon">
+                                <input type="text" id="ribbon-replace-input" placeholder="Replace string...">
+                                <button id="btn-replace-execute" title="Replace Single Instance">Replace</button>
+                                <button id="btn-replace-all-execute" title="Replace Global Blueprint Matches">All</button>
+                            </div>
+                        </div>
+                        <div class="ribbon-row top-border-row check-row">
+                            <input type="checkbox" id="search-case-sensitive"> <label for="search-case-sensitive">Match Character Case</label>
+                        </div>
+                        <div class="ribbon-group-label">Engine Query Find & Replace</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="workspace-container">
+        <aside class="sidebar left-sidebar" id="sidebar-navigation-outline" aria-label="Document Outline Structural Map">
+            <div class="sidebar-header">
+                <h3><i class="fa-solid fa-folder-tree"></i> Outline / Templates</h3>
+                <button class="close-sidebar-btn" data-target="sidebar-navigation-outline">&times;</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="accordion-section">
+                    <h4 class="accordion-trigger">Headings Map Document Tree</h4>
+                    <div class="accordion-body" id="document-outline-tree">
+                        <p class="empty-placeholder-msg">No structured text tags captured yet.</p>
+                    </div>
+                </div>
+                <div class="accordion-section">
+                    <h4 class="accordion-trigger">Recent Document Workspace History</h4>
+                    <div class="accordion-body" id="recent-documents-list">
+                        </div>
+                </div>
+                <div class="accordion-section">
+                    <h4 class="accordion-trigger">Pre-formatted Document Blueprints</h4>
+                    <div class="accordion-body">
+                        <button class="template-inject-btn" data-tpl="memo">Corporate Memo Form</button>
+                        <button class="template-inject-btn" data-tpl="report">Business Proposal Summary</button>
+                        <button class="template-inject-btn" data-tpl="clean">Blank Workspace Slate</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="document-canvas-viewport" id="canvas-scroll-viewport">
+            <div id="table-hud-toolbar" class="table-context-hud" style="display: none;">
+                <button id="hud-table-row-add" title="Add Row Below"><i class="fa-solid fa-row-spacing"></i> +Row</button>
+                <button id="hud-table-row-del" title="Delete Active Selected Row"><i class="fa-solid fa-trash"></i> -Row</button>
+                <div class="hud-divider"></div>
+                <button id="hud-table-cell-color" title="Cell Color Fill"><i class="fa-solid fa-palette"></i> Paint</button>
+                <button id="hud-table-merge" title="Merge Cells (Simulated Structure)"><i class="fa-solid fa-object-group"></i> Merge</button>
+                <button id="hud-table-destroy" title="Purge Entire Matrix Frame" class="text-danger"><i class="fa-solid fa-border-none"></i> Drop</button>
+            </div>
+
+            <div id="image-manipulator-hud" class="image-hud-overlay" style="display:none;">
+                <div class="resize-handle nw"></div>
+                <div class="resize-handle ne"></div>
+                <div class="resize-handle se"></div>
+                <div class="resize-handle sw"></div>
+                <div class="image-hud-actions-menu">
+                    <button id="img-action-left" title="Float Component Left"><i class="fa-solid fa-align-left"></i></button>
+                    <button id="img-action-center" title="Inline Block Center Alignment"><i class="fa-solid fa-align-center"></i></button>
+                    <button id="img-action-right" title="Float Component Right"><i class="fa-solid fa-align-right"></i></button>
+                    <div class="hud-divider"></div>
+                    <button id="img-action-rotate" title="Rotate 90 Degrees Clockwise"><i class="fa-solid fa-rotate-right"></i></button>
+                    <button id="img-action-crop" title="Simulate Proportional Crop Mask"><i class="fa-solid fa-crop-simple"></i></button>
+                    <button id="img-action-delete" class="text-danger" title="Remove Graphic Asset"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+
+            <div class="document-page-surface" id="page-surface-root">
+                <div class="canvas-rich-editable-region" id="wysiwyg-editor-core" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Document Editor Work Surface Area">
+                    <p>Welcome to WordCraft Office. Erase this line item text to construct a new document blueprint workflow structure...</p>
+                </div>
+            </div>
+        </section>
+
+        <aside class="sidebar right-sidebar" id="sidebar-live-metrics" aria-label="Granular Word Metrics and Properties Panel">
+            <div class="sidebar-header">
+                <h3><i class="fa-solid fa-chart-line"></i> Analysis Panels</h3>
+                <button class="close-sidebar-btn" data-target="sidebar-live-metrics">&times;</button>
+            </div>
+            <div class="sidebar-content">
+                <div class="metrics-card-grid">
+                    <div class="metric-box"><span class="val" id="meta-stat-words">0</span><span class="lbl">Words Count</span></div>
+                    <div class="metric-box"><span class="val" id="meta-stat-chars">0</span><span class="lbl">Characters</span></div>
+                    <div class="metric-box"><span class="val" id="meta-stat-paras">0</span><span class="lbl">Paragraphs</span></div>
+                    <div class="metric-box"><span class="val" id="meta-stat-sentences">0</span><span class="lbl">Sentences</span></div>
+                </div>
+                <div class="metric-extended-row">
+                    <span class="lbl"><i class="fa-regular fa-clock"></i> Estimated Read Duration:</span>
+                    <span class="valHighlight" id="meta-stat-readtime">0 min read</span>
+                </div>
+                <hr class="panel-divider">
+                <div class="config-panel-form-group">
+                    <h4>Document Core Target Architecture Settings</h4>
+                    <div class="form-row-block">
+                        <label for="setting-default-font">Default Workspace Typography Engine:</label>
+                        <select id="setting-default-font" class="form-select-ctrl">
+                            <option value="Inter">Inter UI Font</option>
+                            <option value="Arial">Arial Standard</option>
+                            <option value="Times New Roman">Times New Roman Serif</option>
+                            <option value="JetBrains Mono">JetBrains Developer Environment</option>
+                        </select>
+                    </div>
+                    <div class="form-row-block">
+                        <label for="setting-default-zoom">Workspace Scaling Ratio Base:</label>
+                        <select id="setting-default-zoom" class="form-select-ctrl">
+                            <option value="0.75">75% Scaled Frame</option>
+                            <option value="1.0" selected>100% Standard Viewports</option>
+                            <option value="1.25">125% Enlarged</option>
+                            <option value="1.5">150% Presenter</option>
+                        </select>
+                    </div>
+                    <div class="form-row-block checkbox-inline-row">
+                        <input type="checkbox" id="setting-autosave-toggle" checked>
+                        <label for="setting-autosave-toggle">Enable Real-Time Autosave (Every 5s Period)</label>
+                    </div>
+                </div>
+                <hr class="panel-divider">
+                <div class="config-panel-form-group">
+                    <h4>Bookmarks Anchor Target Map</h4>
+                    <div id="bookmarks-anchor-list-wrapper" class="anchor-list">
+                        <p class="empty-placeholder-msg">No structural bookmark markers declared.</p>
+                    </div>
+                    <button class="action-btn wide secondary" id="btn-create-bookmark-anchor"><i class="fa-solid fa-bookmark"></i> Tag Selection As Bookmark Target</button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer class="app-status-bar" role="contentinfo">
+        <div class="status-bar-left-wing">
+            <div class="status-metric-item" title="Computed Pages Layout Metric"><i class="fa-regular fa-file"></i> Page <span id="sb-page-num">1</span> of 1</div>
+            <div class="status-metric-item" title="Total Token Counts"><i class="fa-solid fa-calculator"></i> Words: <span id="sb-word-count">0</span></div>
+            <div class="status-metric-item" title="Characters Density Stream">Chars: <span id="sb-char-count">0</span></div>
+            <div class="status-metric-item" title="Computed Structural Coordinates Mapping"><i class="fa-solid fa-crosshairs"></i> Ln <span id="sb-coord-line">1</span>, Col <span id="sb-coord-col">1</span></div>
+        </div>
+        <div class="status-bar-right-wing">
+            <div class="status-metric-item" id="sb-doc-size-metric" title="LocalStorage Buffer Serialization Envelope Load Metric"><i class="fa-solid fa-database"></i> Payload Size: 0.00 KB</div>
+            <div class="status-metric-item"><i class="fa-solid fa-language"></i> Language Dictionary: <span id="sb-lang-locale">en-US (System Native)</span></div>
+            <div class="divider-vertical-mini"></div>
+            <div class="zoom-control-widget">
+                <button id="btn-zoom-decrement" title="Zoom Out Canvas Focus View" aria-label="Zoom Out">-</button>
+                <select id="canvas-zoom-slider-dropdown" title="Explicit Zoom Percent Selection" aria-label="Zoom Scale Factor">
+                    <option value="0.5">50% Viewport Scale</option>
+                    <option value="0.75">75% Blueprint Size</option>
+                    <option value="1.0" selected>100% Native Resolution</option>
+                    <option value="1.25">125% High Readability</option>
+                    <option value="1.5">150% Super Zoom</option>
+                    <option value="2.0">200% Large Display Presentation</option>
+                </select>
+                <button id="btn-zoom-increment" title="Zoom In Canvas Focus View" aria-label="Zoom In">+</button>
+            </div>
+        </div>
+    </footer>
+
+    <div class="context-menu-wrapper" id="custom-rightclick-context-menu" role="menu" aria-hidden="true" style="display:none;">
+        <button class="context-item" data-action="cut" role="menuitem"><i class="fa-solid fa-scissors"></i> Cut Context <span>Ctrl+X</span></button>
+        <button class="context-item" data-action="copy" role="menuitem"><i class="fa-solid fa-copy"></i> Copy Context <span>Ctrl+C</span></button>
+        <button class="context-item" data-action="paste" role="menuitem"><i class="fa-solid fa-clipboard"></i> Paste Insertion <span>Ctrl+V</span></button>
+        <hr class="context-divider">
+        <button class="context-item" data-action="bold" role="menuitem"><i class="fa-solid fa-bold"></i> Force Weight Bold</button>
+        <button class="context-item" data-action="italic" role="menuitem"><i class="fa-solid fa-italic"></i> Force Slanted Italic</button>
+        <button class="context-item" data-action="underline" role="menuitem"><i class="fa-solid fa-underline"></i> Stroke Underline</button>
+        <hr class="context-divider">
+        <button class="context-item" data-action="link" role="menuitem"><i class="fa-solid fa-link"></i> Inject Hyperlink Map</button>
+        <button class="context-item" data-action="image" role="menuitem"><i class="fa-solid fa-image"></i> Insert Graphic Blob</button>
+        <hr class="context-divider">
+        <button class="context-item" data-action="selectall" role="menuitem"><i class="fa-solid fa-border-all"></i> Target All Contents</button>
+        <button class="context-item text-danger" data-action="delete" role="menuitem"><i class="fa-solid fa-trash"></i> Drop Selection Block</button>
+    </div>
+
+    <div class="modal-overlay-container" id="global-system-modal-container" aria-hidden="true" style="display:none;">
+        <div class="modal-dialog-box" role="dialog" aria-modal="true">
+            <div class="modal-dialog-header">
+                <h3 id="modal-dialog-title">System Request Action Configuration</h3>
+                <button class="modal-close-dismiss-btn" id="modal-close-dismiss-btn">&times;</button>
+            </div>
+            <div class="modal-dialog-body" id="modal-dialog-dynamic-body-payload">
+                </div>
+            <div class="modal-dialog-footer" id="modal-dialog-footer-actions">
+                </div>
+        </div>
+    </div>
+
+    <input type="file" id="hidden-file-pipeline-picker" accept=".txt,.html" style="display:none;">
+    <input type="file" id="hidden-image-pipeline-picker" accept="image/*" style="display:none;">
+
+    <div class="toast-notifications-container-stream" id="toast-alerts-stream-container"></div>
+
+</body>
+</html>
