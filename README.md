@@ -95,3 +95,4 @@ This project is available for educational and personal use. You may modify and e
 ---
 
 **Developed with HTML5, CSS3, and Vanilla JavaScript to deliver a modern, feature-rich text editing experience inspired by desktop office applications.**
+#if like the project give star
