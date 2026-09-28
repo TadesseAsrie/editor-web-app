@@ -87,6 +87,7 @@ No installation or backend setup is required.
 * Voice typing
 * Track changes
 * Comments and annotations
+* online exchanger
 
 ##  License
 
